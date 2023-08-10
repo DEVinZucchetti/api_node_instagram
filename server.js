@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(cors());
 
 const SECRET_KEY = 'suaChaveSecreta'; // Troque para uma chave mais segura em um ambiente de produção
-const dbFile = './data/db.sqlite';
+const dbFile = 'db.sqlite';
 
 
 
