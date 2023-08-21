@@ -26,7 +26,12 @@ if (!fs.existsSync(dbFile)) {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            contact TEXT NOT NULL,
+            password TEXT NOT NULL,
+            bio TEXT,
+            sponsor TEXT,
+            confirm_terms BOOL,
+            plan_type TEXT
         )`);
 
         // Cria a tabela de posts
@@ -49,13 +54,15 @@ if (!fs.existsSync(dbFile)) {
 }
 
 // Conexão com o banco de dados
-const db = new sqlite3.Database(dbFile);
+const db = new sqlite3.Database(dbFile)
+    ;
 app.post('/api/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, contact, password, bio, sponsor, confirmTerms, planType } = req.body;
 
     // Verifica se o e-mail já está em uso
     db.get('SELECT * FROM users WHERE email = ?', [email], async (err, row) => {
         if (err) {
+            console.log(err)
             return res.status(500).json({ message: 'Error registering user.' });
         }
 
@@ -67,10 +74,13 @@ app.post('/api/register', async (req, res) => {
             // Criptografa a senha antes de armazenar no banco de dados
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
+            const confirm_terms = confirmTerms
+            const plan_type = planType
 
             // Insere o novo usuário no banco de dados
-            db.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hashedPassword], function (err) {
+            db.run('INSERT INTO users (name, email, password, contact, sponsor, confirm_terms, plan_type, bio  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [name, email, hashedPassword, contact, sponsor, confirm_terms, plan_type, bio], function (err) {
                 if (err) {
+                    console.log(err)
                     return res.status(500).json({ message: 'Error registering user.' });
                 }
 
@@ -82,6 +92,7 @@ app.post('/api/register', async (req, res) => {
                 return res.status(201).json({ user: newUser });
             });
         } catch (error) {
+            console.log(error)
             return res.status(500).json({ message: 'Error registering user.' });
         }
     });
@@ -89,10 +100,10 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/posts', async (req, res) => {
     const { title, description, url } = req.body;
-    
+
     // Obtém o token de autorização do cabeçalho da requisição
     const token = req.headers.authorization.split(' ')[1];
-    console.log( req.headers.authorization)
+    console.log(req.headers.authorization)
     if (!token) {
         return res.status(401).json({ message: 'Authorization token not found.' });
     }
