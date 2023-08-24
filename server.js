@@ -101,13 +101,14 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/posts', async (req, res) => {
     const { title, description, url } = req.body;
 
-    // Obtém o token de autorização do cabeçalho da requisição
-    const token = req.headers.authorization.split(' ')[1];
-    console.log(req.headers.authorization)
-    if (!token) {
+    if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Authorization token not found.' });
     }
 
+    // Obtém o token de autorização do cabeçalho da requisição
+
+    const token = req.headers.authorization.split(' ')[1];
+   
     try {
         // Verifica o token e obtém as informações do usuário
         const decodedToken = jwt.verify(token, SECRET_KEY, { ignoreExpiration: true });
@@ -194,11 +195,15 @@ app.get('/api/posts', async (req, res) => {
 // Rota para deletar um post por ID
 app.delete('/api/posts/:postId', async (req, res) => {
     // Obtém o token de autorização do cabeçalho da requisição
+
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Não foi enviado o token' });
+    }
+
+
     const token = req.headers.authorization.split(' ')[1];
     
-    if (!token) {
-        return res.status(401).json({ message: 'Authorization token not found.' });
-    }
+   
 
     try {
         // Verifica o token e obtém as informações do usuário
